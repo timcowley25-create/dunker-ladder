@@ -1,1 +1,40 @@
+name: Update Ladder
 
+on:
+  schedule:
+    # 3:30pm AWST every Saturday = 07:30 UTC Saturday
+    - cron: '30 7 * * 6'
+  workflow_dispatch:
+    # Allows manual trigger from GitHub Actions tab anytime
+
+jobs:
+  scrape-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install playwright
+          playwright install chromium
+          playwright install-deps chromium
+
+      - name: Run scraper
+        run: python scrape.py
+
+      - name: Commit and push updated ladder
+        run: |
+          git config user.name "Ladder Bot"
+          git config user.email "ladder-bot@users.noreply.github.com"
+          git add docs/
+          git diff --staged --quiet || git commit -m "Update ladder - $(TZ='Australia/Perth' date '+%A %d %b %Y %I:%M%p AWST')"
+          git push
