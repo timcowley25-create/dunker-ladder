@@ -36,17 +36,13 @@ async def scrape_round(page, round_num):
         print(f"  Could not load Round {round_num}: {e}")
         return None
 
-    # Dump full page text for debugging rounds 1-3
     full_text = await page.inner_text("body")
-    if round_num <= 3:
-        print(f"  --- PAGE TEXT (first 2000 chars) ---")
-        print(full_text[:2000])
-        print(f"  --- END PAGE TEXT ---")
 
-    # Check for "no fixture" signals
-    lower = full_text.lower()
-    no_fixture_signals = ["no fixture", "no games scheduled", "no rounds", "page not found", "404"]
-    if any(s in lower for s in no_fixture_signals):
+    # Check for hard-stop signals (only in main content, not nav/footer noise)
+    # Use a short excerpt from the middle of the page to avoid nav links
+    mid = full_text[200:1000].lower()
+    no_fixture_signals = ["no fixture", "no games scheduled", "no rounds found"]
+    if any(s in mid for s in no_fixture_signals):
         print(f"  Round {round_num}: no fixture signal found, stopping.")
         return None
 
