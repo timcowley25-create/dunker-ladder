@@ -320,10 +320,16 @@ async def scrape_stats(context):
             const nums = texts.map(t => ({ t, n: /^\\d+$/.test(t) ? parseInt(t) : null }));
             const numIdxs = nums.map((x,i) => x.n !== null ? i : -1).filter(i => i >= 0);
             if (numIdxs.length < 2) continue;
-            // Find GP+TP pair: GP is a small number (1-25), TP >= GP, consecutive numeric cols
+            // Skip leading rank number — PlayHQ rows start with rank (1,2,3...)
+            // then player name, then GP, TP, 1PT, 2PT
+            // We want the LAST pair of consecutive numerics before the stats cols
+            // Strategy: find a pair where there's at least one non-numeric text BEFORE the first numeric
             let gpIdx = -1, tpIdx = -1;
             for (let k = 0; k < numIdxs.length - 1; k++) {
                 const a = nums[numIdxs[k]].n, b = nums[numIdxs[k+1]].n;
+                // Must have at least one non-numeric text before this index (skips leading rank)
+                const hasTextBefore = texts.slice(0, numIdxs[k]).some(t => !/^\\d+$/.test(t) && t.length > 2);
+                if (!hasTextBefore) continue;
                 if (a >= 1 && a <= 25 && b >= a) {
                     gpIdx = numIdxs[k]; tpIdx = numIdxs[k+1]; break;
                 }
