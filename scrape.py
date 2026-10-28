@@ -19,108 +19,132 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 async def scrape_round(page, round_num):
     """Visit a round page and extract game results."""
     url = f"{BASE_URL}/R{round_num}"
-    print(f"  Fetching Round {round_num}: {url}")
+    print(f"\n  Fetching Round {round_num}: {url}")
 
     try:
         response = await page.goto(url, timeout=30000)
         if response and response.status == 404:
+            print(f"  Round {round_num}: 404, stopping.")
             return None
 
-        # Wait for JS to render game content
+        # Wait for JS to render
         await page.wait_for_load_state("networkidle", timeout=20000)
-
-        # Give extra time for dynamic content
-        await page.wait_for_timeout(2000)
+        await page.wait_for_timeout(3000)
 
     except Exception as e:
         print(f"  Could not load Round {round_num}: {e}")
         return None
 
-    # Check if this round has any content
-    content = await page.content()
-    if "No games" in content or "no games" in content:
-        print(f"  Round {round_num}: no games found, stopping.")
+    # Dump full page text for debugging rounds 1-3
+    full_text = await page.inner_text("body")
+    if round_num <= 3:
+        print(f"  --- PAGE TEXT (first 2000 chars) ---")
+        print(full_text[:2000])
+        print(f"  --- END PAGE TEXT ---")
+
+    # Check for "no fixture" signals
+    lower = full_text.lower()
+    no_fixture_signals = ["no fixture", "no games scheduled", "no rounds", "page not found", "404"]
+    if any(s in lower for s in no_fixture_signals):
+        print(f"  Round {round_num}: no fixture signal found, stopping.")
         return None
 
+    # If the page has no digits at all, probably nothing loaded
+    if not re.search(r'\d', full_text):
+        print(f"  Round {round_num}: no numeric content found.")
+        return None
+
+    # Take screenshot for first round to help debug
+    if round_num == 1:
+        await page.screenshot(path=str(OUTPUT_DIR / "debug_r1.png"), full_page=True)
+        print("  Screenshot saved to docs/debug_r1.png")
+
+    # Try structured element extraction first
+    games = await extract_from_elements(page, round_num)
+
+    # Fall back to full-page text parsing
+    if not games:
+        print(f"  Trying full-page text parsing...")
+        games = parse_page_text(full_text, round_num)
+
+    if games:
+        for g in games:
+            print(f"    ✓ {g['home_team']} {g['home_score']} – {g['away_score']} {g['away_team']}")
+        return games
+    else:
+        print(f"  Round {round_num}: no games parsed.")
+        # Don't stop — future rounds might have data (e.g. round 1 is a bye)
+        return []
+
+
+async def extract_from_elements(page, round_num):
+    """Try to extract games from DOM elements."""
     games = []
 
-    # Try to extract game cards — PlayHQ renders each game as a card/row
-    # Strategy: find all game result elements
-    try:
-        # Wait for game elements to appear
-        await page.wait_for_selector("[class*='GameSummary'], [class*='game-summary'], [class*='FixtureRow'], [class*='fixture'], article, [data-testid*='game']", timeout=10000)
-    except Exception:
-        print(f"  Round {round_num}: no game elements found.")
-        # Try screenshot for debugging on first round
-        if round_num == 1:
-            await page.screenshot(path=str(OUTPUT_DIR / "debug_r1.png"))
-            print("  Debug screenshot saved to docs/debug_r1.png")
-        return None
+    # PlayHQ uses various class names — try a broad set
+    selectors = [
+        "[class*='GameSummary']",
+        "[class*='game-summary']",
+        "[class*='FixtureRow']",
+        "[class*='GameCard']",
+        "[class*='game-card']",
+        "[class*='fixture-row']",
+        "[class*='match-card']",
+        "[class*='MatchCard']",
+        "article",
+    ]
 
-    # Get all text content and try to parse game data
-    # PlayHQ structure: team name | score | team name | score
-    game_elements = await page.query_selector_all("[class*='GameSummary'], [class*='game-summary'], [class*='FixtureRow'], article[class*='game'], [class*='GameCard']")
-
-    if not game_elements:
-        # Fallback: get all elements that look like score cards
-        game_elements = await page.query_selector_all("article, [class*='Card'], [class*='card']")
-
-    print(f"  Found {len(game_elements)} potential game elements")
-
-    for el in game_elements:
-        try:
-            text = await el.inner_text()
-            game = parse_game_text(text, round_num)
-            if game:
-                games.append(game)
-                print(f"    Game: {game['home_team']} {game['home_score']} - {game['away_score']} {game['away_team']}")
-        except Exception as e:
+    for selector in selectors:
+        elements = await page.query_selector_all(selector)
+        if not elements:
             continue
+        print(f"  Selector '{selector}' found {len(elements)} elements")
+        for el in elements:
+            try:
+                text = await el.inner_text()
+                game = parse_game_from_block(text, round_num)
+                if game:
+                    games.append(game)
+            except Exception:
+                continue
+        if games:
+            return games
 
-    # If element-level parsing found nothing, try full-page text parsing
-    if not games:
-        print(f"  Falling back to full-page text parsing for Round {round_num}")
-        full_text = await page.inner_text("body")
-        games = parse_page_text_fallback(full_text, round_num)
-        for g in games:
-            print(f"    Game: {g['home_team']} {g['home_score']} - {g['away_score']} {g['away_team']}")
-
-    return games if games else None
+    return games
 
 
-def parse_game_text(text, round_num):
+def parse_game_from_block(text, round_num):
     """
-    Parse a game element's text to extract teams and scores.
+    Parse a text block for a single game.
     PlayHQ typically renders: TeamA \n Score \n TeamB \n Score
-    or: TeamA Score - Score TeamB
+    or inline: TeamA 24 - 18 TeamB
     """
     lines = [l.strip() for l in text.strip().splitlines() if l.strip()]
+    # Remove noise words
+    noise = {"vs", "VS", "v", "-", "–", "FINAL", "Final", "Completed",
+              "forfeit", "Forfeit", "BYE", "Bye", "bye", "TBC", "tbc"}
+    lines = [l for l in lines if l not in noise]
 
-    # Filter out noise
-    lines = [l for l in lines if l not in ["vs", "VS", "v", "-", "FINAL", "Final", "Completed"]]
+    # Pattern 1: blocks with [TeamA, scoreA, TeamB, scoreB]
+    scores = []
+    teams = []
+    for line in lines:
+        if re.match(r'^\d{1,3}$', line):
+            scores.append(int(line))
+        elif len(line) > 2 and not re.match(r'^\d', line) and len(line) < 60:
+            teams.append(line)
 
-    # Pattern: lines are [TeamA, scoreA, TeamB, scoreB] or similar
-    if len(lines) >= 4:
-        # Try to find two team names and two scores
-        scores = []
-        teams = []
-        for line in lines:
-            if re.match(r"^\d+$", line):
-                scores.append(int(line))
-            elif len(line) > 2 and not re.match(r"^\d", line):
-                teams.append(line)
+    if len(teams) >= 2 and len(scores) >= 2:
+        return {
+            "round": round_num,
+            "home_team": teams[0],
+            "away_team": teams[1],
+            "home_score": scores[0],
+            "away_score": scores[1],
+        }
 
-        if len(teams) >= 2 and len(scores) >= 2:
-            return {
-                "round": round_num,
-                "home_team": teams[0],
-                "away_team": teams[1],
-                "home_score": scores[0],
-                "away_score": scores[1],
-            }
-
-    # Pattern: "TeamA 24 - 18 TeamB"
-    match = re.search(r"(.+?)\s+(\d+)\s*[-–]\s*(\d+)\s+(.+)", text)
+    # Pattern 2: inline "TeamA 24 - 18 TeamB" or "TeamA 24 – 18 TeamB"
+    match = re.search(r'([A-Za-z][A-Za-z ]{2,40}?)\s+(\d{1,3})\s*[-–]\s*(\d{1,3})\s+([A-Za-z][A-Za-z ]{2,40})', text)
     if match:
         return {
             "round": round_num,
@@ -133,29 +157,75 @@ def parse_game_text(text, round_num):
     return None
 
 
-def parse_page_text_fallback(full_text, round_num):
-    """Fallback: scan full page text for score patterns."""
+def parse_page_text(full_text, round_num):
+    """
+    Full-page text fallback. Looks for score patterns across the whole body.
+    PlayHQ often renders scores as adjacent lines like:
+      Darlington Dunkers
+      14
+      Hills Raiders
+      8
+    """
     games = []
-    # Look for "X def Y" or "X d. Y" patterns, or score lines
-    patterns = [
-        r"([A-Za-z ]+?)\s+(\d{1,3})\s*[-–v]\s*(\d{1,3})\s+([A-Za-z ]+)",
-        r"([A-Za-z ]+?)\s+def\.?\s+([A-Za-z ]+?)\s+(\d{1,3})\s*[-–]\s*(\d{1,3})",
-    ]
-    for pattern in patterns:
-        for match in re.finditer(pattern, full_text):
-            g = match.groups()
-            if len(g) == 4:
-                try:
-                    game = {
-                        "round": round_num,
-                        "home_team": g[0].strip(),
-                        "home_score": int(g[1]),
-                        "away_score": int(g[2]),
-                        "away_team": g[3].strip(),
-                    }
-                    games.append(game)
-                except Exception:
+    lines = [l.strip() for l in full_text.splitlines() if l.strip()]
+
+    # Strategy: scan for pairs of (team, score, team, score) in nearby lines
+    i = 0
+    while i < len(lines) - 3:
+        # Look for a score-like number
+        if re.match(r'^\d{1,3}$', lines[i]):
+            # Walk back to find team name before this score
+            # Look forward for another team name + score
+            score1 = int(lines[i])
+            # Find team before
+            team1 = None
+            for j in range(i - 1, max(i - 5, -1), -1):
+                if re.match(r'^[A-Za-z][A-Za-z ]{2,50}$', lines[j]):
+                    team1 = lines[j]
+                    break
+            if not team1:
+                i += 1
+                continue
+            # Find next score and team
+            for k in range(i + 1, min(i + 6, len(lines))):
+                if re.match(r'^\d{1,3}$', lines[k]):
+                    score2 = int(lines[k])
+                    team2 = None
+                    for m in range(k - 1, i, -1):
+                        if re.match(r'^[A-Za-z][A-Za-z ]{2,50}$', lines[m]) and lines[m] != team1:
+                            team2 = lines[m]
+                            break
+                    if team2:
+                        game = {
+                            "round": round_num,
+                            "home_team": team1,
+                            "away_team": team2,
+                            "home_score": score1,
+                            "away_score": score2,
+                        }
+                        # Avoid duplicates
+                        if not any(g["home_team"] == team1 and g["away_team"] == team2 for g in games):
+                            games.append(game)
+                        i = k + 1
+                        break
+                else:
                     continue
+            else:
+                i += 1
+                continue
+        else:
+            i += 1
+
+    # Also try inline score patterns
+    inline_pattern = re.compile(
+        r'([A-Za-z][A-Za-z ]{2,40}?)\s+(\d{1,3})\s*[-–]\s*(\d{1,3})\s+([A-Za-z][A-Za-z ]{2,40})'
+    )
+    for match in inline_pattern.finditer(full_text):
+        t1, s1, s2, t2 = match.group(1).strip(), int(match.group(2)), int(match.group(3)), match.group(4).strip()
+        if not any(g["home_team"] == t1 and g["away_team"] == t2 for g in games):
+            games.append({"round": round_num, "home_team": t1, "away_team": t2,
+                          "home_score": s1, "away_score": s2})
+
     return games
 
 
@@ -169,7 +239,6 @@ def calculate_ladder(all_games):
         hs = game["home_score"]
         as_ = game["away_score"]
 
-        # Skip games with no scores (not yet played)
         if hs is None or as_ is None:
             continue
 
@@ -198,17 +267,11 @@ def calculate_ladder(all_games):
             teams[home]["Pts"] += 1
             teams[away]["Pts"] += 1
 
-    # Calculate percentage
     ladder = []
     for team, stats in teams.items():
         pct = (stats["PF"] / stats["PA"] * 100) if stats["PA"] > 0 else 0
-        ladder.append({
-            "team": team,
-            **stats,
-            "PCT": round(pct, 1),
-        })
+        ladder.append({"team": team, **stats, "PCT": round(pct, 1)})
 
-    # Sort: Pts desc, PCT desc
     ladder.sort(key=lambda x: (-x["Pts"], -x["PCT"]))
     return ladder
 
@@ -235,7 +298,6 @@ def generate_html(ladder, all_games, last_updated):
             <td class="pts">{t['Pts']}</td>
         </tr>"""
 
-    # Recent results
     recent = sorted(all_games, key=lambda g: -g["round"])[:10]
     result_rows = ""
     for g in recent:
@@ -322,6 +384,7 @@ async def main():
     print("=" * 60)
 
     all_games = []
+    empty_rounds = 0
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
@@ -331,34 +394,40 @@ async def main():
         )
         page = await context.new_page()
 
-        # Loop through rounds until we get no data
-        for round_num in range(1, 30):  # Max 30 rounds
+        for round_num in range(1, 30):
             print(f"\nRound {round_num}...")
             games = await scrape_round(page, round_num)
 
             if games is None:
-                print(f"  No more data after Round {round_num - 1}. Done.")
+                # Hard stop — page not found or explicit no-fixture signal
+                print(f"  Stopping at Round {round_num}.")
                 break
 
-            all_games.extend(games)
-            print(f"  ✓ {len(games)} game(s) found")
+            if len(games) == 0:
+                empty_rounds += 1
+                print(f"  Empty round ({empty_rounds} in a row)")
+                # Stop after 3 consecutive empty rounds
+                if empty_rounds >= 3:
+                    print("  3 consecutive empty rounds — done.")
+                    break
+            else:
+                empty_rounds = 0
+                all_games.extend(games)
+                print(f"  ✓ {len(games)} game(s) added")
 
         await browser.close()
 
     print(f"\n📊 Total games scraped: {len(all_games)}")
 
-    # Save raw data
     with open(OUTPUT_DIR / "games.json", "w") as f:
         json.dump(all_games, f, indent=2)
     print("✓ Raw data saved to docs/games.json")
 
-    # Build ladder
     ladder = calculate_ladder(all_games)
     print(f"\n🏆 Ladder ({len(ladder)} teams):")
     for i, t in enumerate(ladder, 1):
         print(f"  {i}. {t['team']:40s} {t['Pts']}pts  {t['W']}W {t['L']}L  {t['PCT']}%")
 
-    # Generate HTML
     last_updated = datetime.now().strftime("%d %b %Y, %-I:%M%p").lower()
     html = generate_html(ladder, all_games, last_updated)
     with open(OUTPUT_DIR / "index.html", "w") as f:
