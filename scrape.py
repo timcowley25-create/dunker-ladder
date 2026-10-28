@@ -11,6 +11,7 @@ from datetime import datetime
 from playwright.async_api import async_playwright
 
 BASE_URL = "https://www.playhq.com/basketball-wa/org/darlington-basketball-club/hills-raiders-domestic-competition-summer-202627/saturday-u10-mixed-orange/3c18840f"
+STATS_URL = "https://www.playhq.com/basketball-wa/org/hills-raiders-basketball-association/hills-raiders-domestic-competition-summer-202627/saturday-u10-mixed-orange/3c18840f/statistics?sort=TOTAL_SCORE:DESC"
 DARLINGTON_TEAM = "Darlington Dunkers"  # partial match — covers "U10 Mixed Darlington Dunkers"
 OUTPUT_DIR = Path("docs")
 OUTPUT_DIR.mkdir(exist_ok=True)
@@ -279,7 +280,7 @@ def calculate_ladder(all_games):
 
 async def scrape_stats(page):
     """Scrape player statistics from the PlayHQ stats page."""
-    url = f"{BASE_URL}/statistics"
+    url = STATS_URL
     print(f"\n  Fetching stats: {url}")
     try:
         response = await page.goto(url, timeout=30000)
