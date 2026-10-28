@@ -277,9 +277,174 @@ def calculate_ladder(all_games):
     return ladder
 
 
-def generate_html(ladder, all_games, last_updated):
+async def scrape_stats(page):
+    """Scrape player statistics from the PlayHQ stats page."""
+    url = f"{BASE_URL}/statistics"
+    print(f"\n  Fetching stats: {url}")
+    try:
+        response = await page.goto(url, timeout=30000)
+        if response and response.status == 404:
+            print("  Stats page 404.")
+            return []
+        await page.wait_for_load_state("networkidle", timeout=20000)
+        await page.wait_for_timeout(3000)
+    except Exception as e:
+        print(f"  Could not load stats page: {e}")
+        return []
+
+    full_text = await page.inner_text("body")
+    print(f"  Stats page text (first 1000 chars):\n{full_text[:1000]}")
+
+    # Try DOM extraction first — PlayHQ stats tables
+    players = []
+    selectors = ["[class*='StatRow']", "[class*='stat-row']", "[class*='PlayerRow']",
+                 "[class*='player-row']", "tbody tr", "table tr"]
+    for sel in selectors:
+        rows = await page.query_selector_all(sel)
+        if not rows:
+            continue
+        print(f"  Selector '{sel}' found {len(rows)} rows")
+        for row in rows:
+            try:
+                text = await row.inner_text()
+                p = parse_stat_row(text)
+                if p:
+                    players.append(p)
+            except Exception:
+                continue
+        if players:
+            break
+
+    # Fallback: parse full-page text
+    if not players:
+        players = parse_stats_text(full_text)
+
+    print(f"  ✓ {len(players)} players parsed")
+    return players
+
+
+def parse_stat_row(text):
+    """Parse a single stat row text block into a player dict."""
+    lines = [l.strip() for l in text.splitlines() if l.strip()]
+    if len(lines) < 4:
+        return None
+    # Expect pattern: [name, team, gp, tp, 1pt, 2pt, fouls] or similar
+    nums = []
+    name_parts = []
+    for line in lines:
+        if re.match(r'^\d+$', line):
+            nums.append(int(line))
+        elif not re.match(r'^\d', line) and len(line) > 2:
+            name_parts.append(line)
+    if len(nums) < 3 or not name_parts:
+        return None
+    return {
+        "name": name_parts[0] if name_parts else "Unknown",
+        "team": name_parts[1] if len(name_parts) > 1 else "",
+        "gp": nums[0] if len(nums) > 0 else 0,
+        "tp": nums[1] if len(nums) > 1 else 0,
+        "pt1": nums[2] if len(nums) > 2 else 0,
+        "pt2": nums[3] if len(nums) > 3 else 0,
+        "fouls": nums[4] if len(nums) > 4 else 0,
+    }
+
+
+def parse_stats_text(full_text):
+    """
+    Fallback: scan full page text for player stat lines.
+    PlayHQ stats page usually has: Rank Name Team GP TP 1PT 2PT Fouls
+    """
+    players = []
+    lines = [l.strip() for l in full_text.splitlines() if l.strip()]
+
+    # Look for blocks: player name line followed by team line followed by numbers
+    NAME_RE = re.compile(r'^[A-Z][a-z]+ [A-Z][a-z]+')  # "First Last"
+    TEAM_RE = re.compile(r'^[A-Za-z][A-Za-z0-9 ]{4,60}$')
+    NUM_RE = re.compile(r'^\d+$')
+
+    i = 0
+    while i < len(lines):
+        if NAME_RE.match(lines[i]):
+            name = lines[i]
+            team = ""
+            nums = []
+            j = i + 1
+            while j < min(i + 10, len(lines)):
+                if TEAM_RE.match(lines[j]) and not NUM_RE.match(lines[j]) and not team:
+                    team = lines[j]
+                elif NUM_RE.match(lines[j]):
+                    nums.append(int(lines[j]))
+                    if len(nums) >= 5:
+                        break
+                j += 1
+            if len(nums) >= 3:
+                players.append({
+                    "name": name, "team": team,
+                    "gp": nums[0], "tp": nums[1],
+                    "pt1": nums[2], "pt2": nums[3] if len(nums) > 3 else 0,
+                    "fouls": nums[4] if len(nums) > 4 else 0,
+                })
+                i = j
+                continue
+        i += 1
+
+    return players
+
+
+def generate_html(ladder, all_games, last_updated, players=None):
     """Generate the ladder HTML page."""
     darlington_highlight = DARLINGTON_TEAM.lower()
+    players = players or []
+
+    # Build stats table rows (sorted by TP desc)
+    sorted_players = sorted(players, key=lambda p: -p.get("tp", 0))
+    stat_rows = ""
+    for i, p in enumerate(sorted_players[:25], 1):  # top 25
+        is_dunker = darlington_highlight in p.get("team", "").lower()
+        row_class = "darlington" if is_dunker else ""
+        stat_rows += f"""
+        <tr class="{row_class}">
+            <td class="pos">{i}</td>
+            <td class="team">{p['name']}{'  🟠' if is_dunker else ''}</td>
+            <td style="font-size:0.75rem;color:#6b7280">{p.get('team','')}</td>
+            <td>{p.get('gp',0)}</td>
+            <td class="pts">{p.get('tp',0)}</td>
+            <td>{p.get('pt1',0)}</td>
+            <td>{p.get('pt2',0)}</td>
+            <td>{p.get('fouls',0)}</td>
+        </tr>"""
+
+    stats_section = ""
+    if stat_rows:
+        stats_section = f"""
+  <div style="margin-top:20px">
+    <button id="statsToggle" onclick="toggleStats()" style="
+      background:var(--orange);color:white;border:none;border-radius:8px;
+      padding:10px 18px;font-size:0.9rem;font-weight:700;cursor:pointer;
+      display:flex;align-items:center;gap:8px;">
+      📊 Top Player Stats <span id="statsArrow">▼</span>
+    </button>
+    <div id="statsSection" style="display:none;margin-top:10px">
+      <h2>Top Player Stats (Points)</h2>
+      <div class="card">
+        <table>
+          <thead><tr>
+            <th>Pos</th><th class="team">Player</th><th class="team">Team</th>
+            <th>GP</th><th>TP</th><th>1PT</th><th>2PT</th><th>Fouls</th>
+          </tr></thead>
+          <tbody>{stat_rows}</tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script>
+    function toggleStats() {{
+      var s = document.getElementById('statsSection');
+      var a = document.getElementById('statsArrow');
+      if (s.style.display === 'none') {{ s.style.display = 'block'; a.textContent = '▲'; }}
+      else {{ s.style.display = 'none'; a.textContent = '▼'; }}
+    }}
+  </script>"""
 
     rows = ""
     for i, t in enumerate(ladder, 1):
@@ -374,6 +539,8 @@ def generate_html(ladder, all_games, last_updated):
   {'<table><thead><tr><th>Rnd</th><th class="team">Home</th><th>Score</th><th class="team">Away</th></tr></thead><tbody>' + result_rows + '</tbody></table>' if all_games else '<div class="no-data">No results yet.</div>'}
   </div>
 
+  {stats_section}
+
   <p class="meta">Updated {last_updated} AWST · Auto-updated every Saturday at 3:30pm<br>Data sourced from <a href="https://www.playhq.com/basketball-wa" style="color:var(--orange)">PlayHQ Basketball WA</a></p>
 </main>
 </body>
@@ -416,6 +583,10 @@ async def main():
                 all_games.extend(games)
                 print(f"  ✓ {len(games)} game(s) added")
 
+        # Scrape player stats
+        print("\n📈 Scraping player stats...")
+        players = await scrape_stats(page)
+
         await browser.close()
 
     print(f"\n📊 Total games scraped: {len(all_games)}")
@@ -424,13 +595,17 @@ async def main():
         json.dump(all_games, f, indent=2)
     print("✓ Raw data saved to docs/games.json")
 
+    with open(OUTPUT_DIR / "stats.json", "w") as f:
+        json.dump(players, f, indent=2)
+    print(f"✓ Player stats saved to docs/stats.json ({len(players)} players)")
+
     ladder = calculate_ladder(all_games)
     print(f"\n🏆 Ladder ({len(ladder)} teams):")
     for i, t in enumerate(ladder, 1):
         print(f"  {i}. {t['team']:40s} {t['Pts']}pts  {t['W']}W {t['L']}L  {t['PCT']}%")
 
     last_updated = datetime.now().strftime("%d %b %Y, %-I:%M%p").lower()
-    html = generate_html(ladder, all_games, last_updated)
+    html = generate_html(ladder, all_games, last_updated, players=players)
     with open(OUTPUT_DIR / "index.html", "w") as f:
         f.write(html)
     print(f"\n✓ Ladder page written to docs/index.html")
