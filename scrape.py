@@ -280,103 +280,83 @@ def calculate_ladder(all_games):
 
 async def scrape_stats(context):
     """
-    Scrape player statistics by intercepting PlayHQ's internal API call.
-    PlayHQ is a React SPA — it fetches stats as JSON from a GraphQL/REST endpoint.
-    We open the page, capture the XHR response that contains player stats, and parse it.
+    Scrape player stats by reading the rendered DOM table via JavaScript.
+    PlayHQ renders a proper <table> for stats — we extract each row's cells directly.
     """
-    print(f"\n  Fetching stats via network interception: {STATS_URL}")
+    print(f"\n  Fetching stats page: {STATS_URL}")
     page = await context.new_page()
-    captured = []
-
-    async def handle_response(response):
-        url = response.url
-        # PlayHQ stats come from an API endpoint containing 'statistic' or 'graphql'
-        if any(k in url for k in ['statistic', 'graphql', 'player', 'leaderboard']):
-            try:
-                body = await response.text()
-                if len(body) > 100 and ('"name"' in body or '"player"' in body or '"totalScore"' in body or '"totalPoints"' in body):
-                    print(f"  Captured API response from: {url[:100]}")
-                    captured.append((url, body))
-            except Exception:
-                pass
-
-    page.on("response", handle_response)
 
     try:
         await page.goto(STATS_URL, timeout=30000)
         await page.wait_for_load_state("networkidle", timeout=20000)
-        await page.wait_for_timeout(4000)
+        await page.wait_for_timeout(5000)  # extra wait for React rendering
     except Exception as e:
         print(f"  Stats page load error: {e}")
+        await page.close()
+        return []
+
+    # Debug: print first 500 chars of page text
+    try:
+        body_text = await page.inner_text("body")
+        print(f"  Page text preview:\n{body_text[:500]}\n---")
+    except Exception:
+        pass
+
+    # Extract table rows via JavaScript — much more reliable than text parsing
+    players = await page.evaluate("""
+    () => {
+        const players = [];
+        // Try every table row on the page
+        const rows = document.querySelectorAll('tr');
+        for (const row of rows) {
+            const cells = Array.from(row.querySelectorAll('td'));
+            if (cells.length < 4) continue;
+            const texts = cells.map(c => c.innerText.trim());
+            // We expect: [name_or_rank, name, team, gp, tp, 1pt, 2pt, fouls]
+            // or:        [name, team, gp, tp, 1pt, 2pt, fouls]
+            // Find columns: look for a cell that's all digits for GP (small number like 1-30)
+            // and another for TP
+            let name = '', team = '', gp = 0, tp = 0, pt1 = 0, pt2 = 0, fouls = 0;
+            const nums = texts.map(t => ({ t, n: /^\\d+$/.test(t) ? parseInt(t) : null }));
+            // Find first numeric that looks like GP (between 1 and 20)
+            const gpIdx = nums.findIndex(x => x.n !== null && x.n >= 1 && x.n <= 20);
+            if (gpIdx < 0) continue;
+            // TP should be the next numeric after GP
+            const tpIdx = nums.findIndex((x, i) => i > gpIdx && x.n !== null);
+            if (tpIdx < 0) continue;
+            gp = nums[gpIdx].n;
+            tp = nums[tpIdx].n;
+            // Collect remaining numerics for 1PT, 2PT, fouls
+            const rest = nums.slice(tpIdx + 1).filter(x => x.n !== null).map(x => x.n);
+            pt1 = rest[0] || 0; pt2 = rest[1] || 0; fouls = rest[2] || 0;
+            // Name = last non-numeric text before gpIdx (skip rank numbers)
+            const textsBefore = texts.slice(0, gpIdx).filter(t => !/^\\d+$/.test(t) && t.length > 2);
+            if (textsBefore.length === 0) continue;
+            name = textsBefore[textsBefore.length - 1];
+            team = textsBefore.length > 1 ? textsBefore[textsBefore.length - 2] : '';
+            // Sanity: TP should be reasonable (0-100) and GP should be <= 30
+            if (tp > 150 || gp > 30) continue;
+            if (name.length < 3) continue;
+            players.push({ name, team, gp, tp, pt1, pt2, fouls });
+        }
+        return players;
+    }
+    """)
 
     await page.close()
 
-    # Try to parse captured API responses
-    players = []
-    for url, body in captured:
-        try:
-            data = json.loads(body)
-            parsed = extract_players_from_api(data)
-            if parsed:
-                print(f"  ✓ {len(parsed)} players from API response")
-                players = parsed
-                break
-        except Exception:
-            continue
-
-    if not players:
-        print("  No players parsed from API — stats section will be hidden this run.")
-
-    return players
-
-
-def extract_players_from_api(data):
-    """
-    Walk a JSON structure looking for player stat arrays.
-    PlayHQ responses vary but always contain player name + numeric stats.
-    """
-    players = []
-
-    def walk(obj):
-        if isinstance(obj, list):
-            for item in obj:
-                walk(item)
-        elif isinstance(obj, dict):
-            # Look for a player record — must have a name-like field and numeric stats
-            name = (obj.get("name") or obj.get("playerName") or obj.get("fullName") or
-                    obj.get("firstName", "") + " " + obj.get("lastName", "")).strip()
-            team = (obj.get("teamName") or obj.get("team", {}).get("name", "") if isinstance(obj.get("team"), dict) else obj.get("team", ""))
-            gp = obj.get("gamesPlayed") or obj.get("games") or obj.get("GP") or 0
-            tp = (obj.get("totalScore") or obj.get("totalPoints") or obj.get("TP") or
-                  obj.get("points") or obj.get("score") or 0)
-            pt1 = obj.get("onePointMade") or obj.get("freeThrowsMade") or obj.get("1PT") or 0
-            pt2 = obj.get("twoPointMade") or obj.get("fieldGoalsMade") or obj.get("2PT") or 0
-            fouls = obj.get("fouls") or obj.get("personalFouls") or obj.get("PF") or 0
-
-            if name and len(name) > 3 and isinstance(tp, (int, float)) and tp > 0:
-                players.append({
-                    "name": name,
-                    "team": str(team) if team else "",
-                    "gp": int(gp or 0),
-                    "tp": int(tp or 0),
-                    "pt1": int(pt1 or 0),
-                    "pt2": int(pt2 or 0),
-                    "fouls": int(fouls or 0),
-                })
-            else:
-                for v in obj.values():
-                    walk(v)
-
-    walk(data)
-
-    # Deduplicate by name+team, keep highest TP
+    # Deduplicate — keep highest TP per player
     seen = {}
     for p in players:
-        key = (p["name"], p["team"])
+        key = p["name"]
         if key not in seen or p["tp"] > seen[key]["tp"]:
             seen[key] = p
-
     result = sorted(seen.values(), key=lambda x: -x["tp"])
+
+    print(f"  ✓ {len(result)} players extracted from DOM")
+    if result:
+        for p in result[:5]:
+            print(f"    {p['name']} — GP:{p['gp']} TP:{p['tp']}")
     return result
 
 
