@@ -37,14 +37,8 @@ async def scrape_round(page, round_num):
         return None
 
     full_text = await page.inner_text("body")
-
-    # Check for hard-stop signals (only in main content, not nav/footer noise)
-    # Use a short excerpt from the middle of the page to avoid nav links
-    mid = full_text[200:1000].lower()
-    no_fixture_signals = ["no fixture", "no games scheduled", "no rounds found"]
-    if any(s in mid for s in no_fixture_signals):
-        print(f"  Round {round_num}: no fixture signal found, stopping.")
-        return None
+    if round_num <= 2:
+        print(f"  R{round_num} page text (first 1500 chars):\n{full_text[:1500]}\n---")
 
     # If the page has no digits at all, probably nothing loaded
     if not re.search(r'\d', full_text):
