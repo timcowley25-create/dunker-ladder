@@ -1,1 +1,51 @@
-[]
+[
+  {
+    "round": 1,
+    "home_team": "Parky Roos U10 Mixed Red",
+    "away_team": "U10 Mixed Defenders",
+    "home_score": 9,
+    "away_score": 16
+  },
+  {
+    "round": 1,
+    "home_team": "Hills Lions U10 Mixed Wildcats",
+    "away_team": "Mustangs U10 Mixed 1",
+    "home_score": 36,
+    "away_score": 6
+  },
+  {
+    "round": 1,
+    "home_team": "U10 Mixed Darlington Dragonflies",
+    "away_team": "U10 Mixed Darlington Dunkers",
+    "home_score": 16,
+    "away_score": 29
+  },
+  {
+    "round": 2,
+    "home_team": "Chidlow U10 Avengers",
+    "away_team": "U10 Mixed Darlington Dragonflies",
+    "home_score": 17,
+    "away_score": 14
+  },
+  {
+    "round": 2,
+    "home_team": "Gidge U10 Mixed Goannas",
+    "away_team": "U10 Mixed Darlington Dunkers",
+    "home_score": 14,
+    "away_score": 42
+  },
+  {
+    "round": 2,
+    "home_team": "U10 Mixed Defenders",
+    "away_team": "Hills Lions U10 Mixed Wildcats",
+    "home_score": 6,
+    "away_score": 28
+  },
+  {
+    "round": 2,
+    "home_team": "Mustangs U10 Mixed 1",
+    "away_team": "Parky Roos U10 Mixed Red",
+    "home_score": 16,
+    "away_score": 4
+  }
+]
