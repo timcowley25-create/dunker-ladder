@@ -28,9 +28,12 @@ async def scrape_round(page, round_num):
             print(f"  Round {round_num}: 404, stopping.")
             return None
 
-        # Wait for JS to render
-        await page.wait_for_load_state("networkidle", timeout=20000)
-        await page.wait_for_timeout(3000)
+        # Wait for JS to render — networkidle can timeout on PlayHQ due to ads/analytics
+        try:
+            await page.wait_for_load_state("networkidle", timeout=15000)
+        except Exception:
+            pass  # timed out waiting for idle — content is usually ready anyway
+        await page.wait_for_timeout(2000)
 
     except Exception as e:
         print(f"  Could not load Round {round_num}: {e}")
@@ -278,8 +281,11 @@ async def scrape_stats(context):
 
     try:
         await page.goto(STATS_URL, timeout=30000)
-        await page.wait_for_load_state("networkidle", timeout=20000)
-        await page.wait_for_timeout(5000)  # extra wait for React rendering
+        try:
+            await page.wait_for_load_state("networkidle", timeout=15000)
+        except Exception:
+            pass
+        await page.wait_for_timeout(3000)
     except Exception as e:
         print(f"  Stats page load error: {e}")
         await page.close()
