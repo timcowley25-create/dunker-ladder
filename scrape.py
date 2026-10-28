@@ -318,25 +318,33 @@ async def scrape_stats(context):
             // and another for TP
             let name = '', team = '', gp = 0, tp = 0, pt1 = 0, pt2 = 0, fouls = 0;
             const nums = texts.map(t => ({ t, n: /^\\d+$/.test(t) ? parseInt(t) : null }));
-            // Find first numeric that looks like GP (between 1 and 20)
-            const gpIdx = nums.findIndex(x => x.n !== null && x.n >= 1 && x.n <= 20);
+            const numIdxs = nums.map((x,i) => x.n !== null ? i : -1).filter(i => i >= 0);
+            if (numIdxs.length < 2) continue;
+            // Find GP+TP pair: GP is a small number (1-25), TP >= GP, consecutive numeric cols
+            let gpIdx = -1, tpIdx = -1;
+            for (let k = 0; k < numIdxs.length - 1; k++) {
+                const a = nums[numIdxs[k]].n, b = nums[numIdxs[k+1]].n;
+                if (a >= 1 && a <= 25 && b >= a) {
+                    gpIdx = numIdxs[k]; tpIdx = numIdxs[k+1]; break;
+                }
+            }
             if (gpIdx < 0) continue;
-            // TP should be the next numeric after GP
-            const tpIdx = nums.findIndex((x, i) => i > gpIdx && x.n !== null);
-            if (tpIdx < 0) continue;
             gp = nums[gpIdx].n;
             tp = nums[tpIdx].n;
             // Collect remaining numerics for 1PT, 2PT, fouls
-            const rest = nums.slice(tpIdx + 1).filter(x => x.n !== null).map(x => x.n);
-            pt1 = rest[0] || 0; pt2 = rest[1] || 0; fouls = rest[2] || 0;
-            // Name = last non-numeric text before gpIdx (skip rank numbers)
+            const restIdxs = numIdxs.filter(i => i > tpIdx);
+            pt1 = restIdxs[0] !== undefined ? nums[restIdxs[0]].n : 0;
+            pt2 = restIdxs[1] !== undefined ? nums[restIdxs[1]].n : 0;
+            fouls = restIdxs[2] !== undefined ? nums[restIdxs[2]].n : 0;
+            // Texts before GP that aren't pure numbers = [rank_maybe, player_name, team_name]
             const textsBefore = texts.slice(0, gpIdx).filter(t => !/^\\d+$/.test(t) && t.length > 2);
             if (textsBefore.length === 0) continue;
-            name = textsBefore[textsBefore.length - 1];
-            team = textsBefore.length > 1 ? textsBefore[textsBefore.length - 2] : '';
-            // Sanity: TP should be reasonable (0-100) and GP should be <= 30
-            if (tp > 150 || gp > 30) continue;
-            if (name.length < 3) continue;
+            // PlayHQ order in cells: player_name | team_name | GP | TP | ...
+            team = textsBefore[textsBefore.length - 1];
+            name = textsBefore.length > 1 ? textsBefore[textsBefore.length - 2] : textsBefore[0];
+            // Sanity checks
+            if (tp > 200 || gp > 25) continue;
+            if (name.length < 3 || /private/i.test(name)) { name = name || 'Private Player'; }
             players.push({ name, team, gp, tp, pt1, pt2, fouls });
         }
         return players;
