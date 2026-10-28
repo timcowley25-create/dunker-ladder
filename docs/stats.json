@@ -1,1 +1,65 @@
-[]
+[
+  {
+    "name": "U10 Mixed Darlington Dunkers",
+    "team": "Lincoln Backhouse",
+    "gp": 1,
+    "tp": 6,
+    "pt1": 3,
+    "pt2": 0,
+    "fouls": 0
+  },
+  {
+    "name": "U10 Mixed Defenders",
+    "team": "Rhun Hoffman",
+    "gp": 2,
+    "tp": 6,
+    "pt1": 0,
+    "pt2": 0,
+    "fouls": 0
+  },
+  {
+    "name": "U10 Mixed Darlington Dragonflies",
+    "team": "Private Player",
+    "gp": 2,
+    "tp": 4,
+    "pt1": 2,
+    "pt2": 2,
+    "fouls": 0
+  },
+  {
+    "name": "Mustangs U10 Mixed 1",
+    "team": "Torben Sursok",
+    "gp": 2,
+    "tp": 4,
+    "pt1": 2,
+    "pt2": 1,
+    "fouls": 2
+  },
+  {
+    "name": "Gidge U10 Mixed Goannas",
+    "team": "Summer Weerts",
+    "gp": 1,
+    "tp": 4,
+    "pt1": 2,
+    "pt2": 1,
+    "fouls": 0
+  },
+  {
+    "name": "Parky Roos U10 Mixed Red",
+    "team": "Elliot Sapwell",
+    "gp": 2,
+    "tp": 3,
+    "pt1": 1,
+    "pt2": 1,
+    "fouls": 3
+  },
+  {
+    "name": "Chidlow U10 Avengers",
+    "team": "Oliver Chester",
+    "gp": 1,
+    "tp": 2,
+    "pt1": 1,
+    "pt2": 1,
+    "fouls": 0
+  }
+]
