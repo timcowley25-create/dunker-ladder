@@ -11,7 +11,7 @@ from datetime import datetime
 from playwright.async_api import async_playwright
 
 BASE_URL = "https://www.playhq.com/basketball-wa/org/darlington-basketball-club/hills-raiders-domestic-competition-summer-202627/saturday-u10-mixed-orange/3c18840f"
-DARLINGTON_TEAM = "Darlington Dunkers"
+DARLINGTON_TEAM = "Darlington Dunkers"  # partial match — covers "U10 Mixed Darlington Dunkers"
 OUTPUT_DIR = Path("docs")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
@@ -131,7 +131,7 @@ def parse_game_from_block(text, round_num):
     for line in lines:
         if re.match(r'^\d{1,3}$', line):
             scores.append(int(line))
-        elif len(line) > 2 and not re.match(r'^\d', line) and len(line) < 60:
+        elif len(line) > 2 and not re.match(r'^\d{1,3}$', line) and len(line) < 60:
             teams.append(line)
 
     if len(teams) >= 2 and len(scores) >= 2:
@@ -144,7 +144,7 @@ def parse_game_from_block(text, round_num):
         }
 
     # Pattern 2: inline "TeamA 24 - 18 TeamB" or "TeamA 24 – 18 TeamB"
-    match = re.search(r'([A-Za-z][A-Za-z ]{2,40}?)\s+(\d{1,3})\s*[-–]\s*(\d{1,3})\s+([A-Za-z][A-Za-z ]{2,40})', text)
+    match = re.search(r'([A-Za-z][A-Za-z0-9 ]{2,40}?)\s+(\d{1,3})\s*[-–]\s*(\d{1,3})\s+([A-Za-z][A-Za-z0-9 ]{2,40})', text)
     if match:
         return {
             "round": round_num,
@@ -169,30 +169,31 @@ def parse_page_text(full_text, round_num):
     games = []
     lines = [l.strip() for l in full_text.splitlines() if l.strip()]
 
+    # Team names on PlayHQ often include digits e.g. "U10 Mixed Darlington Dunkers", "Mustangs U10 Mixed 1"
+    TEAM_RE = re.compile(r'^[A-Za-z][A-Za-z0-9 ]{2,60}$')
+
     # Strategy: scan for pairs of (team, score, team, score) in nearby lines
     i = 0
     while i < len(lines) - 3:
         # Look for a score-like number
         if re.match(r'^\d{1,3}$', lines[i]):
-            # Walk back to find team name before this score
-            # Look forward for another team name + score
             score1 = int(lines[i])
-            # Find team before
+            # Find team before this score
             team1 = None
             for j in range(i - 1, max(i - 5, -1), -1):
-                if re.match(r'^[A-Za-z][A-Za-z ]{2,50}$', lines[j]):
+                if TEAM_RE.match(lines[j]):
                     team1 = lines[j]
                     break
             if not team1:
                 i += 1
                 continue
             # Find next score and team
-            for k in range(i + 1, min(i + 6, len(lines))):
+            for k in range(i + 1, min(i + 8, len(lines))):
                 if re.match(r'^\d{1,3}$', lines[k]):
                     score2 = int(lines[k])
                     team2 = None
                     for m in range(k - 1, i, -1):
-                        if re.match(r'^[A-Za-z][A-Za-z ]{2,50}$', lines[m]) and lines[m] != team1:
+                        if TEAM_RE.match(lines[m]) and lines[m] != team1:
                             team2 = lines[m]
                             break
                     if team2:
@@ -218,7 +219,7 @@ def parse_page_text(full_text, round_num):
 
     # Also try inline score patterns
     inline_pattern = re.compile(
-        r'([A-Za-z][A-Za-z ]{2,40}?)\s+(\d{1,3})\s*[-–]\s*(\d{1,3})\s+([A-Za-z][A-Za-z ]{2,40})'
+        r'([A-Za-z][A-Za-z0-9 ]{2,40}?)\s+(\d{1,3})\s*[-–]\s*(\d{1,3})\s+([A-Za-z][A-Za-z0-9 ]{2,40})'
     )
     for match in inline_pattern.finditer(full_text):
         t1, s1, s2, t2 = match.group(1).strip(), int(match.group(2)), int(match.group(3)), match.group(4).strip()
