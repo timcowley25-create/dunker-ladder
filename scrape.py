@@ -278,118 +278,106 @@ def calculate_ladder(all_games):
     return ladder
 
 
-async def scrape_stats(page):
-    """Scrape player statistics from the PlayHQ stats page."""
-    url = STATS_URL
-    print(f"\n  Fetching stats: {url}")
-    try:
-        response = await page.goto(url, timeout=30000)
-        if response and response.status == 404:
-            print("  Stats page 404.")
-            return []
-        await page.wait_for_load_state("networkidle", timeout=20000)
-        await page.wait_for_timeout(3000)
-    except Exception as e:
-        print(f"  Could not load stats page: {e}")
-        return []
+async def scrape_stats(context):
+    """
+    Scrape player statistics by intercepting PlayHQ's internal API call.
+    PlayHQ is a React SPA — it fetches stats as JSON from a GraphQL/REST endpoint.
+    We open the page, capture the XHR response that contains player stats, and parse it.
+    """
+    print(f"\n  Fetching stats via network interception: {STATS_URL}")
+    page = await context.new_page()
+    captured = []
 
-    full_text = await page.inner_text("body")
-    print(f"  Stats page text (first 1000 chars):\n{full_text[:1000]}")
-
-    # Try DOM extraction first — PlayHQ stats tables
-    players = []
-    selectors = ["[class*='StatRow']", "[class*='stat-row']", "[class*='PlayerRow']",
-                 "[class*='player-row']", "tbody tr", "table tr"]
-    for sel in selectors:
-        rows = await page.query_selector_all(sel)
-        if not rows:
-            continue
-        print(f"  Selector '{sel}' found {len(rows)} rows")
-        for row in rows:
+    async def handle_response(response):
+        url = response.url
+        # PlayHQ stats come from an API endpoint containing 'statistic' or 'graphql'
+        if any(k in url for k in ['statistic', 'graphql', 'player', 'leaderboard']):
             try:
-                text = await row.inner_text()
-                p = parse_stat_row(text)
-                if p:
-                    players.append(p)
+                body = await response.text()
+                if len(body) > 100 and ('"name"' in body or '"player"' in body or '"totalScore"' in body or '"totalPoints"' in body):
+                    print(f"  Captured API response from: {url[:100]}")
+                    captured.append((url, body))
             except Exception:
-                continue
-        if players:
-            break
+                pass
 
-    # Fallback: parse full-page text
+    page.on("response", handle_response)
+
+    try:
+        await page.goto(STATS_URL, timeout=30000)
+        await page.wait_for_load_state("networkidle", timeout=20000)
+        await page.wait_for_timeout(4000)
+    except Exception as e:
+        print(f"  Stats page load error: {e}")
+
+    await page.close()
+
+    # Try to parse captured API responses
+    players = []
+    for url, body in captured:
+        try:
+            data = json.loads(body)
+            parsed = extract_players_from_api(data)
+            if parsed:
+                print(f"  ✓ {len(parsed)} players from API response")
+                players = parsed
+                break
+        except Exception:
+            continue
+
     if not players:
-        players = parse_stats_text(full_text)
+        print("  No players parsed from API — stats section will be hidden this run.")
 
-    print(f"  ✓ {len(players)} players parsed")
     return players
 
 
-def parse_stat_row(text):
-    """Parse a single stat row text block into a player dict."""
-    lines = [l.strip() for l in text.splitlines() if l.strip()]
-    if len(lines) < 4:
-        return None
-    # Expect pattern: [name, team, gp, tp, 1pt, 2pt, fouls] or similar
-    nums = []
-    name_parts = []
-    for line in lines:
-        if re.match(r'^\d+$', line):
-            nums.append(int(line))
-        elif not re.match(r'^\d', line) and len(line) > 2:
-            name_parts.append(line)
-    if len(nums) < 3 or not name_parts:
-        return None
-    return {
-        "name": name_parts[0] if name_parts else "Unknown",
-        "team": name_parts[1] if len(name_parts) > 1 else "",
-        "gp": nums[0] if len(nums) > 0 else 0,
-        "tp": nums[1] if len(nums) > 1 else 0,
-        "pt1": nums[2] if len(nums) > 2 else 0,
-        "pt2": nums[3] if len(nums) > 3 else 0,
-        "fouls": nums[4] if len(nums) > 4 else 0,
-    }
-
-
-def parse_stats_text(full_text):
+def extract_players_from_api(data):
     """
-    Fallback: scan full page text for player stat lines.
-    PlayHQ stats page usually has: Rank Name Team GP TP 1PT 2PT Fouls
+    Walk a JSON structure looking for player stat arrays.
+    PlayHQ responses vary but always contain player name + numeric stats.
     """
     players = []
-    lines = [l.strip() for l in full_text.splitlines() if l.strip()]
 
-    # Look for blocks: player name line followed by team line followed by numbers
-    NAME_RE = re.compile(r'^[A-Z][a-z]+ [A-Z][a-z]+')  # "First Last"
-    TEAM_RE = re.compile(r'^[A-Za-z][A-Za-z0-9 ]{4,60}$')
-    NUM_RE = re.compile(r'^\d+$')
+    def walk(obj):
+        if isinstance(obj, list):
+            for item in obj:
+                walk(item)
+        elif isinstance(obj, dict):
+            # Look for a player record — must have a name-like field and numeric stats
+            name = (obj.get("name") or obj.get("playerName") or obj.get("fullName") or
+                    obj.get("firstName", "") + " " + obj.get("lastName", "")).strip()
+            team = (obj.get("teamName") or obj.get("team", {}).get("name", "") if isinstance(obj.get("team"), dict) else obj.get("team", ""))
+            gp = obj.get("gamesPlayed") or obj.get("games") or obj.get("GP") or 0
+            tp = (obj.get("totalScore") or obj.get("totalPoints") or obj.get("TP") or
+                  obj.get("points") or obj.get("score") or 0)
+            pt1 = obj.get("onePointMade") or obj.get("freeThrowsMade") or obj.get("1PT") or 0
+            pt2 = obj.get("twoPointMade") or obj.get("fieldGoalsMade") or obj.get("2PT") or 0
+            fouls = obj.get("fouls") or obj.get("personalFouls") or obj.get("PF") or 0
 
-    i = 0
-    while i < len(lines):
-        if NAME_RE.match(lines[i]):
-            name = lines[i]
-            team = ""
-            nums = []
-            j = i + 1
-            while j < min(i + 10, len(lines)):
-                if TEAM_RE.match(lines[j]) and not NUM_RE.match(lines[j]) and not team:
-                    team = lines[j]
-                elif NUM_RE.match(lines[j]):
-                    nums.append(int(lines[j]))
-                    if len(nums) >= 5:
-                        break
-                j += 1
-            if len(nums) >= 3:
+            if name and len(name) > 3 and isinstance(tp, (int, float)) and tp > 0:
                 players.append({
-                    "name": name, "team": team,
-                    "gp": nums[0], "tp": nums[1],
-                    "pt1": nums[2], "pt2": nums[3] if len(nums) > 3 else 0,
-                    "fouls": nums[4] if len(nums) > 4 else 0,
+                    "name": name,
+                    "team": str(team) if team else "",
+                    "gp": int(gp or 0),
+                    "tp": int(tp or 0),
+                    "pt1": int(pt1 or 0),
+                    "pt2": int(pt2 or 0),
+                    "fouls": int(fouls or 0),
                 })
-                i = j
-                continue
-        i += 1
+            else:
+                for v in obj.values():
+                    walk(v)
 
-    return players
+    walk(data)
+
+    # Deduplicate by name+team, keep highest TP
+    seen = {}
+    for p in players:
+        key = (p["name"], p["team"])
+        if key not in seen or p["tp"] > seen[key]["tp"]:
+            seen[key] = p
+
+    result = sorted(seen.values(), key=lambda x: -x["tp"])
+    return result
 
 
 def generate_html(ladder, all_games, last_updated, players=None):
@@ -584,9 +572,9 @@ async def main():
                 all_games.extend(games)
                 print(f"  ✓ {len(games)} game(s) added")
 
-        # Scrape player stats
+        # Scrape player stats (uses a fresh page to intercept API calls)
         print("\n📈 Scraping player stats...")
-        players = await scrape_stats(page)
+        players = await scrape_stats(context)
 
         await browser.close()
 
