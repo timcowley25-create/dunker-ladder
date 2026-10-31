@@ -9,6 +9,24 @@
     "fouls": 0
   },
   {
+    "name": "Hudson Cooper",
+    "team": "U10 Mixed Darlington Dragonflies",
+    "gp": 3,
+    "tp": 18,
+    "pt1": 9,
+    "pt2": 3,
+    "fouls": 0
+  },
+  {
+    "name": "Mason Brooks",
+    "team": "Mustangs U10 Mixed 1",
+    "gp": 3,
+    "tp": 16,
+    "pt1": 8,
+    "pt2": 5,
+    "fouls": 0
+  },
+  {
     "name": "Cameron Heath",
     "team": "Hills Lions U10 Mixed Wildcats",
     "gp": 2,
@@ -36,12 +54,12 @@
     "fouls": 0
   },
   {
-    "name": "Hudson Cooper",
+    "name": "Will Ditri",
     "team": "U10 Mixed Darlington Dragonflies",
-    "gp": 2,
+    "gp": 3,
     "tp": 12,
     "pt1": 6,
-    "pt2": 1,
+    "pt2": 6,
     "fouls": 0
   },
   {
@@ -72,11 +90,38 @@
     "fouls": 1
   },
   {
+    "name": "Hunter Robertson",
+    "team": "Mustangs U10 Mixed 1",
+    "gp": 3,
+    "tp": 10,
+    "pt1": 2,
+    "pt2": 4,
+    "fouls": 0
+  },
+  {
+    "name": "Theo Di Rosso",
+    "team": "U10 Mixed Darlington Dragonflies",
+    "gp": 3,
+    "tp": 10,
+    "pt1": 5,
+    "pt2": 1,
+    "fouls": 0
+  },
+  {
     "name": "Jax De jong",
     "team": "Hills Lions U10 Mixed Wildcats",
     "gp": 2,
     "tp": 10,
     "pt1": 5,
+    "pt2": 0,
+    "fouls": 0
+  },
+  {
+    "name": "Private Player",
+    "team": "U10 Mixed Darlington Dragonflies",
+    "gp": 3,
+    "tp": 8,
+    "pt1": 4,
     "pt2": 0,
     "fouls": 0
   },
@@ -87,15 +132,6 @@
     "tp": 8,
     "pt1": 4,
     "pt2": 0,
-    "fouls": 0
-  },
-  {
-    "name": "Private Player",
-    "team": "Parky Roos U10 Mixed Red",
-    "gp": 2,
-    "tp": 8,
-    "pt1": 4,
-    "pt2": 1,
     "fouls": 0
   },
   {
@@ -126,12 +162,12 @@
     "fouls": 0
   },
   {
-    "name": "Mason Brooks",
-    "team": "Mustangs U10 Mixed 1",
-    "gp": 2,
+    "name": "William Collis",
+    "team": "U10 Mixed Darlington Dragonflies",
+    "gp": 3,
     "tp": 6,
     "pt1": 3,
-    "pt2": 1,
+    "pt2": 4,
     "fouls": 0
   },
   {
@@ -144,30 +180,12 @@
     "fouls": 0
   },
   {
-    "name": "William Collis",
-    "team": "U10 Mixed Darlington Dragonflies",
-    "gp": 2,
-    "tp": 6,
-    "pt1": 3,
-    "pt2": 3,
-    "fouls": 0
-  },
-  {
     "name": "Rowan Browarczyk",
     "team": "U10 Mixed Defenders",
     "gp": 2,
     "tp": 6,
     "pt1": 3,
     "pt2": 3,
-    "fouls": 0
-  },
-  {
-    "name": "Hunter Robertson",
-    "team": "Mustangs U10 Mixed 1",
-    "gp": 2,
-    "tp": 6,
-    "pt1": 3,
-    "pt2": 0,
     "fouls": 0
   },
   {
@@ -198,6 +216,15 @@
     "fouls": 0
   },
   {
+    "name": "Beau Rose",
+    "team": "Mustangs U10 Mixed 1",
+    "gp": 3,
+    "tp": 4,
+    "pt1": 2,
+    "pt2": 1,
+    "fouls": 0
+  },
+  {
     "name": "Torben Sursok",
     "team": "Mustangs U10 Mixed 1",
     "gp": 2,
@@ -207,30 +234,12 @@
     "fouls": 2
   },
   {
-    "name": "Beau Rose",
-    "team": "Mustangs U10 Mixed 1",
-    "gp": 2,
-    "tp": 4,
-    "pt1": 2,
-    "pt2": 1,
-    "fouls": 0
-  },
-  {
     "name": "Cuen Stringer",
     "team": "U10 Mixed Defenders",
     "gp": 2,
     "tp": 4,
     "pt1": 2,
     "pt2": 1,
-    "fouls": 0
-  },
-  {
-    "name": "Theo Di Rosso",
-    "team": "U10 Mixed Darlington Dragonflies",
-    "gp": 2,
-    "tp": 4,
-    "pt1": 2,
-    "pt2": 0,
     "fouls": 0
   },
   {
@@ -279,15 +288,6 @@
     "fouls": 0
   },
   {
-    "name": "Will Ditri",
-    "team": "U10 Mixed Darlington Dragonflies",
-    "gp": 2,
-    "tp": 2,
-    "pt1": 1,
-    "pt2": 6,
-    "fouls": 0
-  },
-  {
     "name": "Finn Harris",
     "team": "U10 Mixed Defenders",
     "gp": 2,
@@ -303,15 +303,6 @@
     "tp": 2,
     "pt1": 1,
     "pt2": 3,
-    "fouls": 0
-  },
-  {
-    "name": "Flynn Dymond",
-    "team": "Mustangs U10 Mixed 1",
-    "gp": 2,
-    "tp": 2,
-    "pt1": 1,
-    "pt2": 0,
     "fouls": 0
   },
   {
