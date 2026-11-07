@@ -54,5 +54,40 @@
     "away_team": "U10 Mixed Darlington Dragonflies",
     "home_score": 18,
     "away_score": 28
+  },
+  {
+    "round": 4,
+    "home_team": "Hills Lions U10 Mixed Wildcats",
+    "away_team": "U10 Mixed Darlington Dunkers",
+    "home_score": 22,
+    "away_score": 12
+  },
+  {
+    "round": 4,
+    "home_team": "Gidge U10 Mixed Hotshots",
+    "away_team": "U10 Mixed Darlington Dragonflies",
+    "home_score": 2,
+    "away_score": 41
+  },
+  {
+    "round": 4,
+    "home_team": "Chidlow U10 Avengers",
+    "away_team": "Gidge U10 Mixed Goannas",
+    "home_score": 17,
+    "away_score": 2
+  },
+  {
+    "round": 4,
+    "home_team": "Parky Roos U10 Mixed Grey",
+    "away_team": "Mustangs U10 Mixed 1",
+    "home_score": 22,
+    "away_score": 19
+  },
+  {
+    "round": 4,
+    "home_team": "U10 Mixed Defenders",
+    "away_team": "Parky Roos U10 Mixed Red",
+    "home_score": 21,
+    "away_score": 7
   }
 ]
