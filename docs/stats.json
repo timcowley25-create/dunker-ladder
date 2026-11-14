@@ -2,46 +2,73 @@
   {
     "name": "Noah Seiler",
     "team": "U10 Mixed Darlington Dunkers",
-    "gp": 3,
-    "tp": 32,
+    "gp": 4,
+    "tp": 46,
     "pt1": 8,
-    "pt2": 12,
-    "fouls": 1
+    "pt2": 19,
+    "fouls": 2
   },
   {
-    "name": "Hudson Cooper",
-    "team": "U10 Mixed Darlington Dragonflies",
-    "gp": 4,
-    "tp": 26,
-    "pt1": 13,
-    "pt2": 4,
-    "fouls": 0
+    "name": "Flynn Nipperess",
+    "team": "Chidlow U10 Avengers",
+    "gp": 2,
+    "tp": 32,
+    "pt1": 2,
+    "pt2": 15,
+    "fouls": 4
   },
   {
     "name": "Private Player",
     "team": "U10 Mixed Darlington Dragonflies",
-    "gp": 4,
-    "tp": 22,
-    "pt1": 11,
+    "gp": 5,
+    "tp": 28,
+    "pt1": 14,
     "pt2": 0,
     "fouls": 0
   },
   {
-    "name": "Theo Di Rosso",
-    "team": "U10 Mixed Darlington Dragonflies",
+    "name": "Jax De jong",
+    "team": "Hills Lions U10 Mixed Wildcats",
     "gp": 4,
-    "tp": 22,
-    "pt1": 11,
-    "pt2": 1,
+    "tp": 27,
+    "pt1": 3,
+    "pt2": 12,
+    "fouls": 3
+  },
+  {
+    "name": "Hudson Cooper",
+    "team": "U10 Mixed Darlington Dragonflies",
+    "gp": 5,
+    "tp": 26,
+    "pt1": 13,
+    "pt2": 6,
     "fouls": 0
   },
   {
     "name": "Cameron Heath",
     "team": "Hills Lions U10 Mixed Wildcats",
-    "gp": 3,
-    "tp": 22,
-    "pt1": 11,
+    "gp": 4,
+    "tp": 26,
+    "pt1": 13,
     "pt2": 6,
+    "fouls": 0
+  },
+  {
+    "name": "Theo Di Rosso",
+    "team": "U10 Mixed Darlington Dragonflies",
+    "gp": 5,
+    "tp": 25,
+    "pt1": 1,
+    "pt2": 12,
+    "fouls": 2
+  },
+  {
+    "name": "Hunter Robertson",
+    "team": "Mustangs U10 Mixed 1",
+    "gp": 5,
+    "tp": 20,
+    "pt1": 2,
+    "pt2": 9,
     "fouls": 0
   },
   {
@@ -54,22 +81,40 @@
     "fouls": 0
   },
   {
-    "name": "Hunter Robertson",
-    "team": "Mustangs U10 Mixed 1",
+    "name": "Will Rhoades",
+    "team": "Hills Lions U10 Mixed Wildcats",
     "gp": 4,
+    "tp": 19,
+    "pt1": 1,
+    "pt2": 9,
+    "fouls": 3
+  },
+  {
+    "name": "Oscar Sutherland",
+    "team": "U10 Mixed Darlington Dunkers",
+    "gp": 4,
+    "tp": 18,
+    "pt1": 4,
+    "pt2": 7,
+    "fouls": 3
+  },
+  {
+    "name": "Finn Warnock",
+    "team": "U10 Mixed Defenders",
+    "gp": 3,
     "tp": 18,
     "pt1": 2,
     "pt2": 8,
-    "fouls": 0
+    "fouls": 1
   },
   {
-    "name": "Jax De jong",
+    "name": "Ashton Dewar",
     "team": "Hills Lions U10 Mixed Wildcats",
-    "gp": 3,
-    "tp": 18,
-    "pt1": 9,
-    "pt2": 2,
-    "fouls": 0
+    "gp": 4,
+    "tp": 17,
+    "pt1": 1,
+    "pt2": 8,
+    "fouls": 1
   },
   {
     "name": "James Cowley",
@@ -81,31 +126,40 @@
     "fouls": 1
   },
   {
-    "name": "Will Rhoades",
-    "team": "Hills Lions U10 Mixed Wildcats",
-    "gp": 3,
-    "tp": 15,
-    "pt1": 1,
-    "pt2": 7,
-    "fouls": 3
+    "name": "Leo Wainwright",
+    "team": "U10 Mixed Darlington Dunkers",
+    "gp": 4,
+    "tp": 16,
+    "pt1": 8,
+    "pt2": 2,
+    "fouls": 0
   },
   {
-    "name": "Ashton Dewar",
-    "team": "Hills Lions U10 Mixed Wildcats",
+    "name": "Lincoln Backhouse",
+    "team": "U10 Mixed Darlington Dunkers",
     "gp": 3,
-    "tp": 15,
-    "pt1": 1,
+    "tp": 16,
+    "pt1": 8,
     "pt2": 7,
-    "fouls": 1
+    "fouls": 0
   },
   {
-    "name": "Flynn Nipperess",
-    "team": "Chidlow U10 Avengers",
-    "gp": 1,
-    "tp": 15,
-    "pt1": 1,
+    "name": "James Davis",
+    "team": "Parky Roos U10 Mixed Grey",
+    "gp": 2,
+    "tp": 16,
+    "pt1": 8,
+    "pt2": 2,
+    "fouls": 0
+  },
+  {
+    "name": "Rowan Browarczyk",
+    "team": "U10 Mixed Defenders",
+    "gp": 4,
+    "tp": 14,
+    "pt1": 7,
     "pt2": 7,
-    "fouls": 2
+    "fouls": 0
   },
   {
     "name": "Will Ditri",
@@ -117,48 +171,57 @@
     "fouls": 0
   },
   {
-    "name": "Oscar Sutherland",
-    "team": "U10 Mixed Darlington Dunkers",
-    "gp": 3,
-    "tp": 12,
-    "pt1": 4,
-    "pt2": 4,
-    "fouls": 2
-  },
-  {
-    "name": "Finn Warnock",
-    "team": "U10 Mixed Defenders",
-    "gp": 2,
-    "tp": 12,
-    "pt1": 6,
-    "pt2": 1,
+    "name": "Ellis Hogg",
+    "team": "Hills Lions U10 Mixed Wildcats",
+    "gp": 4,
+    "tp": 11,
+    "pt1": 1,
+    "pt2": 5,
     "fouls": 0
   },
   {
     "name": "William Collis",
     "team": "U10 Mixed Darlington Dragonflies",
+    "gp": 5,
+    "tp": 10,
+    "pt1": 5,
+    "pt2": 6,
+    "fouls": 0
+  },
+  {
+    "name": "Torben Sursok",
+    "team": "Mustangs U10 Mixed 1",
     "gp": 4,
     "tp": 10,
-    "pt1": 5,
-    "pt2": 5,
-    "fouls": 0
+    "pt1": 4,
+    "pt2": 3,
+    "fouls": 5
   },
   {
-    "name": "James Davis",
-    "team": "Parky Roos U10 Mixed Grey",
-    "gp": 1,
+    "name": "Cuen Stringer",
+    "team": "U10 Mixed Defenders",
+    "gp": 4,
     "tp": 10,
-    "pt1": 5,
-    "pt2": 1,
+    "pt1": 2,
+    "pt2": 4,
     "fouls": 0
   },
   {
-    "name": "Ellis Hogg",
+    "name": "Cooper Lewis",
+    "team": "Chidlow U10 Avengers",
+    "gp": 3,
+    "tp": 9,
+    "pt1": 3,
+    "pt2": 1,
+    "fouls": 1
+  },
+  {
+    "name": "Sullivan Henry",
     "team": "Hills Lions U10 Mixed Wildcats",
     "gp": 3,
     "tp": 8,
     "pt1": 4,
-    "pt2": 0,
+    "pt2": 3,
     "fouls": 0
   },
   {
@@ -171,15 +234,6 @@
     "fouls": 0
   },
   {
-    "name": "Leo Wainwright",
-    "team": "U10 Mixed Darlington Dunkers",
-    "gp": 3,
-    "tp": 8,
-    "pt1": 4,
-    "pt2": 2,
-    "fouls": 0
-  },
-  {
     "name": "Bailey Spicer",
     "team": "U10 Mixed Darlington Dunkers",
     "gp": 3,
@@ -189,8 +243,8 @@
     "fouls": 0
   },
   {
-    "name": "Sullivan Henry",
-    "team": "Hills Lions U10 Mixed Wildcats",
+    "name": "Jimmy Gribben",
+    "team": "Parky Roos U10 Mixed Grey",
     "gp": 2,
     "tp": 8,
     "pt1": 4,
@@ -207,39 +261,48 @@
     "fouls": 0
   },
   {
-    "name": "Cooper Lewis",
-    "team": "Chidlow U10 Avengers",
-    "gp": 2,
+    "name": "Beau Rose",
+    "team": "Mustangs U10 Mixed 1",
+    "gp": 5,
     "tp": 7,
-    "pt1": 2,
-    "pt2": 1,
-    "fouls": 1
-  },
-  {
-    "name": "Rowan Browarczyk",
-    "team": "U10 Mixed Defenders",
-    "gp": 3,
-    "tp": 6,
     "pt1": 3,
-    "pt2": 4,
+    "pt2": 2,
     "fouls": 0
   },
   {
-    "name": "Torben Sursok",
-    "team": "Mustangs U10 Mixed 1",
-    "gp": 3,
-    "tp": 6,
-    "pt1": 2,
-    "pt2": 2,
-    "fouls": 2
+    "name": "Rhun Hoffman",
+    "team": "U10 Mixed Defenders",
+    "gp": 4,
+    "tp": 7,
+    "pt1": 1,
+    "pt2": 3,
+    "fouls": 8
   },
   {
-    "name": "Cuen Stringer",
-    "team": "U10 Mixed Defenders",
+    "name": "Theo Sapwell",
+    "team": "Parky Roos U10 Mixed Red",
+    "gp": 4,
+    "tp": 6,
+    "pt1": 3,
+    "pt2": 6,
+    "fouls": 0
+  },
+  {
+    "name": "Carter Moulds",
+    "team": "Chidlow U10 Avengers",
     "gp": 3,
     "tp": 6,
-    "pt1": 2,
-    "pt2": 2,
+    "pt1": 3,
+    "pt2": 1,
+    "fouls": 0
+  },
+  {
+    "name": "Oliver Chester",
+    "team": "Chidlow U10 Avengers",
+    "gp": 3,
+    "tp": 6,
+    "pt1": 3,
+    "pt2": 5,
     "fouls": 0
   },
   {
@@ -252,119 +315,65 @@
     "fouls": 0
   },
   {
-    "name": "Lincoln Backhouse",
-    "team": "U10 Mixed Darlington Dunkers",
+    "name": "CHRISTIAN HOESLE",
+    "team": "Parky Roos U10 Mixed Grey",
     "gp": 2,
     "tp": 6,
     "pt1": 3,
-    "pt2": 5,
-    "fouls": 0
-  },
-  {
-    "name": "Beau Rose",
-    "team": "Mustangs U10 Mixed 1",
-    "gp": 4,
-    "tp": 5,
-    "pt1": 3,
-    "pt2": 1,
-    "fouls": 0
-  },
-  {
-    "name": "Oscar Reece",
-    "team": "Parky Roos U10 Mixed Red",
-    "gp": 3,
-    "tp": 5,
-    "pt1": 1,
-    "pt2": 2,
-    "fouls": 3
-  },
-  {
-    "name": "Finn Harris",
-    "team": "U10 Mixed Defenders",
-    "gp": 3,
-    "tp": 4,
-    "pt1": 2,
     "pt2": 0,
     "fouls": 0
   },
   {
-    "name": "Theo Sapwell",
-    "team": "Parky Roos U10 Mixed Red",
-    "gp": 3,
-    "tp": 4,
-    "pt1": 2,
-    "pt2": 5,
-    "fouls": 0
-  },
-  {
-    "name": "Carter Moulds",
-    "team": "Chidlow U10 Avengers",
-    "gp": 2,
-    "tp": 4,
-    "pt1": 2,
-    "pt2": 0,
-    "fouls": 0
-  },
-  {
-    "name": "Oliver Chester",
-    "team": "Chidlow U10 Avengers",
-    "gp": 2,
-    "tp": 4,
-    "pt1": 2,
-    "pt2": 2,
-    "fouls": 0
-  },
-  {
-    "name": "CHRISTIAN HOESLE",
+    "name": "Blake Davies",
     "team": "Parky Roos U10 Mixed Grey",
-    "gp": 1,
-    "tp": 4,
-    "pt1": 2,
+    "gp": 2,
+    "tp": 6,
+    "pt1": 3,
     "pt2": 0,
     "fouls": 0
   },
   {
     "name": "Tom Marriott",
     "team": "Parky Roos U10 Mixed Grey",
-    "gp": 1,
-    "tp": 4,
-    "pt1": 2,
-    "pt2": 1,
-    "fouls": 0
-  },
-  {
-    "name": "Elliot Sapwell",
-    "team": "Parky Roos U10 Mixed Red",
-    "gp": 3,
-    "tp": 3,
-    "pt1": 1,
-    "pt2": 1,
-    "fouls": 3
-  },
-  {
-    "name": "Rhun Hoffman",
-    "team": "U10 Mixed Defenders",
-    "gp": 3,
-    "tp": 3,
-    "pt1": 1,
-    "pt2": 1,
-    "fouls": 8
-  },
-  {
-    "name": "Ondre Jackson",
-    "team": "Chidlow U10 Avengers",
     "gp": 2,
-    "tp": 2,
-    "pt1": 1,
+    "tp": 6,
+    "pt1": 3,
     "pt2": 2,
     "fouls": 0
   },
   {
-    "name": "Noah McCarthy",
-    "team": "U10 Mixed Defenders",
-    "gp": 2,
-    "tp": 2,
+    "name": "Oscar Reece",
+    "team": "Parky Roos U10 Mixed Red",
+    "gp": 4,
+    "tp": 5,
     "pt1": 1,
+    "pt2": 2,
+    "fouls": 5
+  },
+  {
+    "name": "Finn Harris",
+    "team": "U10 Mixed Defenders",
+    "gp": 4,
+    "tp": 4,
+    "pt1": 2,
+    "pt2": 0,
+    "fouls": 0
+  },
+  {
+    "name": "Ondre Jackson",
+    "team": "Chidlow U10 Avengers",
+    "gp": 1,
+    "tp": 4,
+    "pt1": 0,
+    "pt2": 0,
+    "fouls": 0
+  },
+  {
+    "name": "Thomas Davis",
+    "team": "Parky Roos U10 Mixed Red",
+    "gp": 1,
+    "tp": 2,
+    "pt1": 0,
     "pt2": 0,
     "fouls": 0
   },
@@ -373,25 +382,16 @@
     "team": "Chidlow U10 Avengers",
     "gp": 2,
     "tp": 2,
-    "pt1": 2,
+    "pt1": 0,
     "pt2": 0,
     "fouls": 0
   },
   {
-    "name": "Jimmy Gribben",
-    "team": "Parky Roos U10 Mixed Grey",
+    "name": "Elliot Sapwell",
+    "team": "Parky Roos U10 Mixed Red",
     "gp": 1,
-    "tp": 2,
-    "pt1": 1,
-    "pt2": 0,
-    "fouls": 0
-  },
-  {
-    "name": "Blake Davies",
-    "team": "Parky Roos U10 Mixed Grey",
-    "gp": 1,
-    "tp": 2,
-    "pt1": 1,
+    "tp": 1,
+    "pt1": 5,
     "pt2": 0,
     "fouls": 0
   }
