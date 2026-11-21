@@ -65,18 +65,18 @@
   {
     "name": "Hunter Robertson",
     "team": "Mustangs U10 Mixed 1",
-    "gp": 5,
-    "tp": 20,
+    "gp": 6,
+    "tp": 24,
     "pt1": 2,
-    "pt2": 9,
+    "pt2": 11,
     "fouls": 0
   },
   {
     "name": "Mason Brooks",
     "team": "Mustangs U10 Mixed 1",
-    "gp": 4,
-    "tp": 20,
-    "pt1": 10,
+    "gp": 5,
+    "tp": 24,
+    "pt1": 12,
     "pt2": 5,
     "fouls": 0
   },
@@ -162,6 +162,15 @@
     "fouls": 0
   },
   {
+    "name": "Torben Sursok",
+    "team": "Mustangs U10 Mixed 1",
+    "gp": 5,
+    "tp": 12,
+    "pt1": 4,
+    "pt2": 4,
+    "fouls": 5
+  },
+  {
     "name": "Will Ditri",
     "team": "U10 Mixed Darlington Dragonflies",
     "gp": 3,
@@ -189,21 +198,21 @@
     "fouls": 0
   },
   {
-    "name": "Torben Sursok",
-    "team": "Mustangs U10 Mixed 1",
-    "gp": 4,
-    "tp": 10,
-    "pt1": 4,
-    "pt2": 3,
-    "fouls": 5
-  },
-  {
     "name": "Cuen Stringer",
     "team": "U10 Mixed Defenders",
     "gp": 4,
     "tp": 10,
     "pt1": 2,
     "pt2": 4,
+    "fouls": 0
+  },
+  {
+    "name": "Beau Rose",
+    "team": "Mustangs U10 Mixed 1",
+    "gp": 6,
+    "tp": 9,
+    "pt1": 3,
+    "pt2": 3,
     "fouls": 0
   },
   {
@@ -261,15 +270,6 @@
     "fouls": 0
   },
   {
-    "name": "Beau Rose",
-    "team": "Mustangs U10 Mixed 1",
-    "gp": 5,
-    "tp": 7,
-    "pt1": 3,
-    "pt2": 2,
-    "fouls": 0
-  },
-  {
     "name": "Rhun Hoffman",
     "team": "U10 Mixed Defenders",
     "gp": 4,
@@ -281,10 +281,10 @@
   {
     "name": "Theo Sapwell",
     "team": "Parky Roos U10 Mixed Red",
-    "gp": 4,
+    "gp": 5,
     "tp": 6,
     "pt1": 3,
-    "pt2": 6,
+    "pt2": 7,
     "fouls": 0
   },
   {
@@ -342,6 +342,24 @@
     "fouls": 0
   },
   {
+    "name": "Olly Pernechele",
+    "team": "Mustangs U10 Mixed 1",
+    "gp": 5,
+    "tp": 5,
+    "pt1": 1,
+    "pt2": 2,
+    "fouls": 4
+  },
+  {
+    "name": "Elliot Sapwell",
+    "team": "Parky Roos U10 Mixed Red",
+    "gp": 5,
+    "tp": 5,
+    "pt1": 1,
+    "pt2": 2,
+    "fouls": 7
+  },
+  {
     "name": "Oscar Reece",
     "team": "Parky Roos U10 Mixed Red",
     "gp": 4,
@@ -371,27 +389,9 @@
   {
     "name": "Thomas Davis",
     "team": "Parky Roos U10 Mixed Red",
-    "gp": 1,
-    "tp": 2,
-    "pt1": 0,
-    "pt2": 0,
-    "fouls": 0
-  },
-  {
-    "name": "Tyler McCarthy",
-    "team": "Chidlow U10 Avengers",
     "gp": 2,
-    "tp": 2,
+    "tp": 3,
     "pt1": 0,
-    "pt2": 0,
-    "fouls": 0
-  },
-  {
-    "name": "Elliot Sapwell",
-    "team": "Parky Roos U10 Mixed Red",
-    "gp": 1,
-    "tp": 1,
-    "pt1": 5,
     "pt2": 0,
     "fouls": 0
   }
